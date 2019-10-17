@@ -15,18 +15,16 @@ async function getTopCommitters(groupID, total){
     console.dir(topComitters);
     for(let committer of topComitters){
         let proportion = committer.commits / total;
-        console.dir(proportion, committer.email);
+        console.dir(proportion, committer.email, committer.commits);
     }
 }
 
 async function getTotalCommits(groupID){
     let total = 0;
-    let reposUrl = groupsUrl + "/" + groupID + "/repos";
-    let repos = await fetchData(reposUrl);
-    for(let repo of repos){
-        total += repo.commits_all_time;
-    }
-    console.dir(total);
+    let aggUrl = groupsUrl + "/" + groupID + "/aggregate-summary?begin_date=2018-10-17";
+    let summary = await fetchData(aggUrl);
+    total = summary[0].commit_count
+    console.dir(summary);
     getTopCommitters(groupID, total);
 }
 

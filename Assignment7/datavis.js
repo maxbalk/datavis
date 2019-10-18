@@ -1,7 +1,7 @@
 const base = "http://augur.osshealth.io:5000/api/unstable";
 let groups;
 let repos;
-
+let shortList = new Array();
 function filterRepos(keyw){
     let list = document.getElementById("repoList");
     let included = new Array();
@@ -58,28 +58,46 @@ async function selectRepo(){
     let repo = repos[repoIndex];
     let groupIndex = document.getElementById("groupList").selectedIndex - 1;
     let group = groups[groupIndex];
-    console.dir(repo, group);
     getTopCommitters(group.repo_group_id, repo.repo_id);
 }
 
 async function getTopCommitters(groupID, repoID){
     let total = 0;
     let topUrl = base + "/repo-groups/" + groupID + "/repos/" + repoID + "/top-committers?threshold=0.5";
-    console.dir(topUrl);
     let topComitters = await fetchData(topUrl);
-    console.dir(topComitters);
     for(let committer of topComitters){
         total += committer.commits;
     }
-    console.dir(total);
+    shortList.length = 0; //clear the shortList
     for(let committer of topComitters){
         let proportion = committer.commits / total;
         var topComitter = {
-            percent: proportion,
             email: committer.email,
             commits: committer.commits
         };
+        shortList.push(topComitter);
     }
+    google.charts.load('current', {packages:['corechart']});
+    google.charts.setOnLoadCallback(drawTopChart);
+}
+
+function drawTopChart(){
+    //console.dir(shortList);
+    var stuff = [
+        ['email', 'commits'],
+    ];
+    for(var i=0;i<shortList.length;i++){
+        var things = new Array();
+        things.push(shortList[i].email, shortList[i].commits);
+        stuff.push(things);
+    }
+    console.dir(stuff);
+    var data = google.visualization.arrayToDataTable(stuff);
+    for(let item of shortList){
+    }
+    console.dir(data);
+    var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+    chart.draw(data);
 }
 
 async function fetchData(url){

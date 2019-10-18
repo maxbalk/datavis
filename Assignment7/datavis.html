@@ -5,6 +5,7 @@
         <title>data visualization</title>
         <link rel="stylesheet" type="text/css" href="styles.css">
         <script src="datavis.js"></script>
+        <script src="https://www.gstatic.com/charts/loader.js"></script>
     </head>
     <body onload="groupList()">
         <div id="headBar" class="clear">
@@ -12,10 +13,13 @@
                 <option disabled selected>Project List</option>
             </select>
             <select id="repoList">
-                
+
             </select>
             <input type="text" placeholder="filter repos" onkeypress="filterRepos(this.value)">
             <input type="button" onclick="selectRepo()" value="Get Repo Metrics">
-        </div> 
+        </div>
+        <div id="piechart">
+
+        </div>
     </body>
 </html>

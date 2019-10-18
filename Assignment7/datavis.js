@@ -1,31 +1,49 @@
 const groupsUrl = "http://augur.osshealth.io:5000/api/unstable/repo-groups";
-
-async function getAllData(){
-    let groups = await fetchData(groupsUrl);
-    /*for(const group of groups){
-        await getTotalCommits(group.repo_group_id);
-    }*/
-    let total = await getTotalCommits(groups[0].repo_group_id);
-    //let top = await getTopCommitters(groups[0].repo_group_id, total);
+let groups;
+async function getGroups(){
+    groups = await fetchData(groupsUrl);
+    let list = document.getElementById("groupList");
+    for(let group of groups){
+        var option = document.createElement("option");
+        option.value = group.repo_group_id;
+        option.innerHTML = group.rg_name;
+        list.options.add(option);
+    }
+    console.dir(list);
+    //await getTopCommitters(groups[1].repo_group_id);
 }
 
-async function getTopCommitters(groupID, total){
-    let topUrl = groupsUrl + "/" + groupID + "/top-committers?threshold=1";
-    let topComitters = await fetchData(topUrl);
-    console.dir(topComitters);
-    for(let committer of topComitters){
-        let proportion = committer.commits / total;
-        console.dir(proportion, committer.email, committer.commits);
+async function getRepos(groupIndex){
+    let group = groups[groupIndex];
+    let list = document.getElementById("repoList");
+    let reposUrl = groupsUrl + "/" + group.repo_group_id + "/repos";
+    let repos = await fetchData(reposUrl);
+    for(let repo of repos){
+        var option = document.createElement("option");
+        option.value = repo.repo_id;
+        option.innerHTML = repo.repo_name;
+        list.options.add(option);
     }
 }
 
-async function getTotalCommits(groupID){
+async function getTopCommitters(groupID){
     let total = 0;
-    let aggUrl = groupsUrl + "/" + groupID + "/aggregate-summary?begin_date=2018-10-17";
-    let summary = await fetchData(aggUrl);
-    total = summary[0].commit_count
-    console.dir(summary);
-    getTopCommitters(groupID, total);
+    let topUrl = groupsUrl + "/" + groupID + "/top-committers?threshold=0.5";
+    let topComitters = await fetchData(topUrl);
+    console.dir(topComitters);
+    for(let committer of topComitters){
+        total += committer.commits;
+    }
+    console.dir(total);
+    for(let committer of topComitters){
+        let proportion = committer.commits / total;
+        var topComitter = {
+            percent: proportion,
+            email: committer.email,
+            commits: committer.commits
+        };
+        //console.dir(proportion, committer.email, committer.commits);
+    }
 }
 
 async function fetchData(url){

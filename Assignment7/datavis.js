@@ -1,10 +1,10 @@
-const groupsUrl = "http://augur.osshealth.io:5000/api/unstable/repo-groups";
+const base = "http://augur.osshealth.io:5000/api/unstable";
 let groups;
+let repos;
 
 function filterRepos(keyw){
     let list = document.getElementById("repoList");
     let included = new Array();
-    
     for(var i=0;i<list.length;i++){
         let txt = list.options[i].text;
         let include = txt.toLowerCase().startsWith(keyw);
@@ -16,11 +16,10 @@ function filterRepos(keyw){
         }
     }
     list.selectedIndex = included[0];
-    console.dir(included);
 }    
 
-async function getGroups(){
-    groups = await fetchData(groupsUrl);
+async function groupList(){
+    groups = await getGroups();
     let list = document.getElementById("groupList");
     for(let group of groups){
         var option = document.createElement("option");
@@ -29,16 +28,17 @@ async function getGroups(){
         list.options.add(option);
     }
 }
+async function getGroups(){
+    let groupsUrl = base + "/repo-groups/";
+    groups = await fetchData(groupsUrl);
+    return groups;
+}
 
-async function getRepos(groupIndex){
-    
+async function repoList(groupIndex){
     let list = document.getElementById("repoList");
     while(list.options.length) list.options.remove(0);
 
-    let group = groups[groupIndex];
-    let reposUrl = groupsUrl + "/" + group.repo_group_id + "/repos";
-    let repos = await fetchData(reposUrl);
-
+    repos = await getRepos(groupIndex);  
     for(let repo of repos){
         var option = document.createElement("option");
         option.value = repo.repo_id;
@@ -46,10 +46,26 @@ async function getRepos(groupIndex){
         list.options.add(option);
     }
 }
+async function getRepos(groupIndex){
+    let group = groups[groupIndex];
+    let reposUrl = base + "/repo-groups/" + group.repo_group_id + "/repos/";
+    let repos = await fetchData(reposUrl);
+    return repos;
+}
 
-async function getTopCommitters(groupID){
+async function selectRepo(){
+    let repoIndex = document.getElementById("repoList").selectedIndex;
+    let repo = repos[repoIndex];
+    let groupIndex = document.getElementById("groupList").selectedIndex - 1;
+    let group = groups[groupIndex];
+    console.dir(repo, group);
+    getTopCommitters(group.repo_group_id, repo.repo_id);
+}
+
+async function getTopCommitters(groupID, repoID){
     let total = 0;
-    let topUrl = groupsUrl + "/" + groupID + "/top-committers?threshold=0.5";
+    let topUrl = base + "/repo-groups/" + groupID + "/repos/" + repoID + "/top-committers?threshold=0.5";
+    console.dir(topUrl);
     let topComitters = await fetchData(topUrl);
     console.dir(topComitters);
     for(let committer of topComitters){

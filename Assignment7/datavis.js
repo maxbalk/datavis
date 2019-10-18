@@ -84,13 +84,12 @@ function callDrawTopChart(){
     google.charts.setOnLoadCallback(drawTopChart);
 }
 function drawTopChart(){
-    //console.dir(shortList);
     var stuff = [
         ['email', 'commits'],
     ];
-    for(var i=0;i<shortList.length;i++){
+    for(let item of shortList){ //what in tarnation
         var things = new Array();
-        things.push(shortList[i].email, shortList[i].commits);
+        things.push(item.email, item.commits);
         stuff.push(things);
     }
     var data = google.visualization.arrayToDataTable(stuff);

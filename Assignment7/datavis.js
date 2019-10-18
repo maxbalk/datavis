@@ -9,15 +9,17 @@ async function getGroups(){
         option.innerHTML = group.rg_name;
         list.options.add(option);
     }
-    console.dir(list);
-    //await getTopCommitters(groups[1].repo_group_id);
 }
 
 async function getRepos(groupIndex){
-    let group = groups[groupIndex];
+    
     let list = document.getElementById("repoList");
+    while(list.options.length) list.options.remove(0);
+
+    let group = groups[groupIndex];
     let reposUrl = groupsUrl + "/" + group.repo_group_id + "/repos";
     let repos = await fetchData(reposUrl);
+    
     for(let repo of repos){
         var option = document.createElement("option");
         option.value = repo.repo_id;
@@ -42,7 +44,6 @@ async function getTopCommitters(groupID){
             email: committer.email,
             commits: committer.commits
         };
-        //console.dir(proportion, committer.email, committer.commits);
     }
 }
 

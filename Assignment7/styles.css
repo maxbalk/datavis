@@ -1,0 +1,9 @@
+.clear:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+select {
+    width: 100px;
+}

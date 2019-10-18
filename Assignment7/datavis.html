@@ -3,14 +3,17 @@
     <head>
         <meta charset="utf-8">
         <title>data visualization</title>
+        <link rel="stylesheet" type="text/css" href="styles.css">
         <script src="datavis.js"></script>
     </head>
     <body onload="getGroups()">
-        <select id="groupList" onchange="getRepos(this.selectedIndex-1)">
-            <option disabled selected>Project List</option>
-        </select>
-        <select id="repoList">
-
-        </select>
+        <div id="headBar" class="clear">
+            <select id="groupList" onchange="getRepos(this.selectedIndex-1)">
+                <option disabled selected>Project List</option>
+            </select>
+            <select id="repoList">
+            </select>
+            <input type="text" placeholder="filter repos" onkeyup="filterRepos(this.value)">
+        </div> 
     </body>
 </html>

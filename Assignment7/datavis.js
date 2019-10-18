@@ -53,7 +53,7 @@ async function getRepos(groupIndex){
     return repos;
 }
 
-async function selectRepo(){
+function selectRepo(){
     let repoIndex = document.getElementById("repoList").selectedIndex;
     let repo = repos[repoIndex];
     let groupIndex = document.getElementById("groupList").selectedIndex - 1;
@@ -63,7 +63,7 @@ async function selectRepo(){
 
 async function getTopCommitters(groupID, repoID){
     let total = 0;
-    let topUrl = base + "/repo-groups/" + groupID + "/repos/" + repoID + "/top-committers?threshold=0.5";
+    let topUrl = base + "/repo-groups/" + groupID + "/repos/" + repoID + "/top-committers?threshold=0.4";
     let topComitters = await fetchData(topUrl);
     for(let committer of topComitters){
         total += committer.commits;
@@ -77,10 +77,12 @@ async function getTopCommitters(groupID, repoID){
         };
         shortList.push(topComitter);
     }
+    callDrawTopChart();
+}
+function callDrawTopChart(){
     google.charts.load('current', {packages:['corechart']});
     google.charts.setOnLoadCallback(drawTopChart);
 }
-
 function drawTopChart(){
     //console.dir(shortList);
     var stuff = [
@@ -91,13 +93,12 @@ function drawTopChart(){
         things.push(shortList[i].email, shortList[i].commits);
         stuff.push(things);
     }
-    console.dir(stuff);
     var data = google.visualization.arrayToDataTable(stuff);
     for(let item of shortList){
     }
-    console.dir(data);
+    var options = {'width':400, 'height' :400};
     var chart = new google.visualization.PieChart(document.getElementById('piechart'));
-    chart.draw(data);
+    chart.draw(data, options);
 }
 
 async function fetchData(url){

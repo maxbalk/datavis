@@ -53,7 +53,9 @@ async function getRepos(groupIndex){
     return repos;
 }
 
-function selectRepo(){
+/*could put shortList here instead of global. 
+call "callDrawTopChart" here instead of in "getTopCommitters"*/
+function selectRepo(){ 
     let repoIndex = document.getElementById("repoList").selectedIndex;
     let repo = repos[repoIndex];
     let groupIndex = document.getElementById("groupList").selectedIndex - 1;
@@ -64,20 +66,25 @@ function selectRepo(){
 async function getTopCommitters(groupID, repoID){
     let total = 0;
     let topUrl = base + "/repo-groups/" + groupID + "/repos/" + repoID + "/top-committers?threshold=0.4";
-    let topComitters = await fetchData(topUrl);
-    for(let committer of topComitters){
-        total += committer.commits;
+    try{
+        let topComitters = await fetchData(topUrl);
+        for(let committer of topComitters){
+            total += committer.commits;
+        }
+        shortList.length = 0; //clear the shortList
+        for(let committer of topComitters){
+            let proportion = committer.commits / total;
+            var topComitter = {
+                email: committer.email,
+                commits: committer.commits
+            };
+            shortList.push(topComitter);
+        }
+        callDrawTopChart();
+    } catch(e) {
+        document.getElementById("piechart").innerHTML = "The selected repo is not accepting that request";
     }
-    shortList.length = 0; //clear the shortList
-    for(let committer of topComitters){
-        let proportion = committer.commits / total;
-        var topComitter = {
-            email: committer.email,
-            commits: committer.commits
-        };
-        shortList.push(topComitter);
-    }
-    callDrawTopChart();
+    
 }
 function callDrawTopChart(){
     google.charts.load('current', {packages:['corechart']});
@@ -95,7 +102,7 @@ function drawTopChart(){
     var data = google.visualization.arrayToDataTable(stuff);
     for(let item of shortList){
     }
-    var options = {'width':400, 'height' :400};
+    var options = {'width':600, 'height' :400};
     var chart = new google.visualization.PieChart(document.getElementById('piechart'));
     chart.draw(data, options);
 }

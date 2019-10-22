@@ -73,7 +73,6 @@ async function getTopCommitters(groupID, repoID){
         }
         shortList.length = 0; //clear the shortList
         for(let committer of topComitters){
-            let proportion = committer.commits / total;
             var topComitter = {
                 email: committer.email,
                 commits: committer.commits
@@ -84,24 +83,22 @@ async function getTopCommitters(groupID, repoID){
     } catch(e) {
         document.getElementById("piechart").innerHTML = "The selected repo is not accepting that request";
     }
-    
 }
 function callDrawTopChart(){
     google.charts.load('current', {packages:['corechart']});
     google.charts.setOnLoadCallback(drawTopChart);
 }
 function drawTopChart(){
-    var stuff = [
+    var dataElements = [
         ['email', 'commits'],
     ];
     for(let item of shortList){ //what in tarnation
-        var things = new Array();
-        things.push(item.email, item.commits);
-        stuff.push(things);
+        var dataItem = new Array();
+        dataItem.push(item.email, item.commits);
+        dataElements.push(dataItem);
     }
-    var data = google.visualization.arrayToDataTable(stuff);
-    for(let item of shortList){
-    }
+    var data = google.visualization.arrayToDataTable(dataElements);
+
     var options = {'width':600, 'height' :400};
     var chart = new google.visualization.PieChart(document.getElementById('piechart'));
     chart.draw(data, options);

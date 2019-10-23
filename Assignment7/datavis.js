@@ -64,7 +64,6 @@ function selectRepo(){
 }
 
 async function getTopCommitters(groupID, repoID){
-    let total = 0;
     let topUrl = base + "/repo-groups/" + groupID + "/repos/" + repoID + "/top-committers?threshold=0.4";
     try{
         let topComitters = await fetchData(topUrl);

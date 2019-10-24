@@ -3,6 +3,7 @@ let groups;
 let repos;
 let shortList = new Array();
 let acceptList = new Array();
+let issueList = new Array();
 function filterRepos(keyw){
     let list = document.getElementById("repoList");
     let included = new Array();
@@ -63,7 +64,20 @@ function selectRepo(){
     let group = groups[groupIndex];
     getTopCommitters(group.repo_group_id, repo.repo_id);
     getPullAcceptance(group.repo_group_id, repo.repo_id);
+    getNewIssues(group.repo_group_id, repo.repo_id);
 }
+
+async function getNewIssues(groupID, repoID){
+    let issueURL = base + "/repo-groups/" + groupID + "/repos/" + repoID + "issues-new?period=week";
+    try{
+        let newIssues = await fetchData(issueURL);
+
+    } catch(e){
+        
+    }
+}
+
+
 //Get Pull Acceptance Function
 async function getPullAcceptance(groupID, repoID){
     let acceptUrl = base + "/repo-groups/" + groupID + "/repos/" + repoID + "/pull-request-acceptance-rate";

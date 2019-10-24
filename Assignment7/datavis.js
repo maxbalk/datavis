@@ -71,13 +71,15 @@ async function getPullAcceptance(groupID, repoID){
         let acceptanceRate = await fetchData(acceptUrl)
         console.log(acceptanceRate)
         for(let acceptance of acceptanceRate){
+            acceptance.date = acceptance.date.slice(0,10);
+            console.dir(acceptance);
             acceptList.push(acceptance);
         }
         callDrawAcceptanceChart();
     }catch(e){
         document.getElementById("pullGraph").innerHTML = "The selected repo is not accepting that request";
     }
-    }
+}
 
 
 function callDrawAcceptanceChart(){

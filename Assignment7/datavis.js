@@ -68,13 +68,46 @@ function selectRepo(){
 }
 
 async function getNewIssues(groupID, repoID){
-    let issueURL = base + "/repo-groups/" + groupID + "/repos/" + repoID + "issues-new?period=week";
+    let issueURL = base + "/repo-groups/" + groupID + "/repos/" + repoID + "/issues-new?period=week";
     try{
         let newIssues = await fetchData(issueURL);
-
+        console.log(newIssues)
+        for(let issue of newIssues){
+            issue.date = issue.date.slice(0,10);
+            console.dir(issue);
+            issueList.push(issue);
+        }
+        callDrawNewIssueChart();
     } catch(e){
-        
+        document.getElementById("colGraph").innerHTML = "The selected repo is not accepting that request";
     }
+}
+
+function callDrawNewIssueChart(){
+    google.charts.load('current', {packages:['corechart']});
+    google.charts.setOnLoadCallback(drawNewIssueChart);
+}
+
+function drawNewIssueChart(){
+    var dataElements = [
+        ['date', 'issues'],
+    ];
+    for(let item of issueList){
+        var dataItem = new Array();
+        if (item.issues>=100){item.issues = 100;}
+        dataItem.push(item.date, item.issues);
+        dataElements.push(dataItem);
+    }
+    var data = google.visualization.arrayToDataTable(dataElements);
+    var options = {
+        width : 600, 
+        height : 400, 
+        vAxis:{
+            ticks:[0,10,20,30,40,50,60,70,80,90,100]
+        }
+    }
+    var chart = new google.visualization.ColumnChart(document.getElementById('colGraph'));
+    chart.draw(data, options);
 }
 
 

@@ -2,6 +2,8 @@ const base = "http://augur.osshealth.io:5000/api/unstable";
 let groups;
 let repos;
 let shortList = new Array();
+let acceptList = new Array();
+let issueList = new Array();
 function filterRepos(keyw){
     let list = document.getElementById("repoList");
     let included = new Array();
@@ -61,8 +63,99 @@ function selectRepo(){
     let groupIndex = document.getElementById("groupList").selectedIndex - 1;
     let group = groups[groupIndex];
     getTopCommitters(group.repo_group_id, repo.repo_id);
+    getPullAcceptance(group.repo_group_id, repo.repo_id);
+    getNewIssues(group.repo_group_id, repo.repo_id);
 }
 
+async function getNewIssues(groupID, repoID){
+    let issueURL = base + "/repo-groups/" + groupID + "/repos/" + repoID + "/issues-new?period=week";
+    try{
+        let newIssues = await fetchData(issueURL);
+        console.log(newIssues)
+        for(let issue of newIssues){
+            issue.date = issue.date.slice(0,10);
+            console.dir(issue);
+            issueList.push(issue);
+        }
+        callDrawNewIssueChart();
+    } catch(e){
+        document.getElementById("colGraph").innerHTML = "The selected repo is not accepting that request";
+    }
+}
+
+function callDrawNewIssueChart(){
+    google.charts.load('current', {packages:['corechart']});
+    google.charts.setOnLoadCallback(drawNewIssueChart);
+}
+
+function drawNewIssueChart(){
+    var dataElements = [
+        ['date', 'issues'],
+    ];
+    for(let item of issueList){
+        var dataItem = new Array();
+        if (item.issues>=100){item.issues = 100;}
+        dataItem.push(item.date, item.issues);
+        dataElements.push(dataItem);
+    }
+    var data = google.visualization.arrayToDataTable(dataElements);
+    var options = {
+        width : 600, 
+        height : 400, 
+        vAxis:{
+            ticks:[0,10,20,30,40,50,60,70,80,90,100]
+        }
+    }
+    var chart = new google.visualization.ColumnChart(document.getElementById('colGraph'));
+    chart.draw(data, options);
+}
+
+
+//Get Pull Acceptance Function
+async function getPullAcceptance(groupID, repoID){
+    let acceptUrl = base + "/repo-groups/" + groupID + "/repos/" + repoID + "/pull-request-acceptance-rate";
+    try{
+        let acceptanceRate = await fetchData(acceptUrl)
+        console.log(acceptanceRate)
+        for(let acceptance of acceptanceRate){
+            acceptance.date = acceptance.date.slice(0,10);
+            console.dir(acceptance);
+            acceptList.push(acceptance);
+        }
+        callDrawAcceptanceChart();
+    }catch(e){
+        document.getElementById("pullGraph").innerHTML = "The selected repo is not accepting that request";
+    }
+}
+
+
+function callDrawAcceptanceChart(){
+    google.charts.load('current', {packages:['corechart']});
+    google.charts.setOnLoadCallback(drawAcceptanceChart);
+}
+function drawAcceptanceChart(){
+    var dataElements = [
+        ['date', 'rate'],
+    ];
+    for(let item of acceptList){ //what in tarnation
+        var dataItem = new Array();
+        dataItem.push(item.date, item.rate);
+        dataElements.push(dataItem);
+    }
+    var data = google.visualization.arrayToDataTable(dataElements);
+
+    var options = {'width':600, 'height' :400};
+    var chart = new google.visualization.LineChart(document.getElementById('pullGraph'));
+    chart.draw(data, options);
+}
+
+
+
+
+
+
+
+// TOP COMITTERS FUNCTION
 async function getTopCommitters(groupID, repoID){
     let topUrl = base + "/repo-groups/" + groupID + "/repos/" + repoID + "/top-committers?threshold=0.4";
     try{

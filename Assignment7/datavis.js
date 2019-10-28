@@ -71,15 +71,13 @@ async function getNewIssues(groupID, repoID){
     let issueURL = base + "/repo-groups/" + groupID + "/repos/" + repoID + "/issues-new?period=week";
     try{
         let newIssues = await fetchData(issueURL);
-        console.log(newIssues)
         for(let issue of newIssues){
             issue.date = issue.date.slice(0,10);
-            console.dir(issue);
             issueList.push(issue);
         }
         callDrawNewIssueChart();
     } catch(e){
-        document.getElementById("colGraph").innerHTML = "The selected repo is not accepting that request";
+        document.getElementById("colGraph").innerHTML = "The selected repo is not providing any data on new issues";
     }
 }
 
@@ -110,25 +108,19 @@ function drawNewIssueChart(){
     chart.draw(data, options);
 }
 
-
-//Get Pull Acceptance Function
 async function getPullAcceptance(groupID, repoID){
     let acceptUrl = base + "/repo-groups/" + groupID + "/repos/" + repoID + "/pull-request-acceptance-rate";
     try{
         let acceptanceRate = await fetchData(acceptUrl)
-        console.log(acceptanceRate)
         for(let acceptance of acceptanceRate){
             acceptance.date = acceptance.date.slice(0,10);
-            console.dir(acceptance);
             acceptList.push(acceptance);
         }
         callDrawAcceptanceChart();
     }catch(e){
-        document.getElementById("pullGraph").innerHTML = "The selected repo is not accepting that request";
+        document.getElementById("pullGraph").innerHTML = "The selected repo is not providing any data on pull acceptance rate";
     }
 }
-
-
 function callDrawAcceptanceChart(){
     google.charts.load('current', {packages:['corechart']});
     google.charts.setOnLoadCallback(drawAcceptanceChart);
@@ -149,13 +141,6 @@ function drawAcceptanceChart(){
     chart.draw(data, options);
 }
 
-
-
-
-
-
-
-// TOP COMITTERS FUNCTION
 async function getTopCommitters(groupID, repoID){
     let topUrl = base + "/repo-groups/" + groupID + "/repos/" + repoID + "/top-committers?threshold=0.4";
     try{
@@ -173,7 +158,7 @@ async function getTopCommitters(groupID, repoID){
         }
         callDrawTopChart();
     } catch(e) {
-        document.getElementById("piechart").innerHTML = "The selected repo is not accepting that request";
+        document.getElementById("piechart").innerHTML = "The selected repo is not providing any data on top committers";
     }
 }
 function callDrawTopChart(){

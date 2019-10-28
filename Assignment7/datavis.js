@@ -57,14 +57,11 @@ function selectRepo(){
     let repo = repos[repoIndex];
     let groupIndex = document.getElementById("groupList").selectedIndex - 1;
     let group = groups[groupIndex];
+
+    google.charts.load('current', {packages:['corechart']});
     getTopCommitters(group.repo_group_id, repo.repo_id);
     getPullAcceptance(group.repo_group_id, repo.repo_id);
     getNewIssues(group.repo_group_id, repo.repo_id);
-}
-
-function loadChart(chart){
-    google.charts.load('current', {packages:['corechart']});
-    google.charts.setOnLoadCallback(chart);
 }
 
 async function getNewIssues(groupID, repoID){
@@ -77,12 +74,12 @@ async function getNewIssues(groupID, repoID){
             if (issue.issues>=100){issue.issues = 100;} //normalization
             issueList.push(issue);
         }
-        loadChart(drawNewIssueChart(issueList));
+        google.charts.setOnLoadCallback(drawNewIssueChart(issueList));
     } catch(e){
         document.getElementById("colGraph").innerHTML = "The selected repo is not providing any data on new issues";
     }
 }
-function drawNewIssueChart(issueList){
+let drawNewIssueChart = function(issueList){
     let data = new google.visualization.DataTable();
     data.addColumn('string', 'Date');
     data.addColumn('number', 'Issues');
@@ -103,12 +100,12 @@ async function getPullAcceptance(groupID, repoID){
             acceptance.date = acceptance.date.slice(0,10);
             acceptList.push(acceptance);
         }
-        loadChart(drawAcceptanceChart(acceptList));
+        google.charts.setOnLoadCallback(drawAcceptanceChart(acceptList));
     }catch(e){
         document.getElementById("pullGraph").innerHTML = "The selected repo is not providing any data on pull acceptance rate";
     }
 }
-function drawAcceptanceChart(acceptList){
+let drawAcceptanceChart = function(acceptList){
     let data = new google.visualization.DataTable();
     data.addColumn('string', 'Date');
     data.addColumn('number', 'Rate');
@@ -128,12 +125,12 @@ async function getTopCommitters(groupID, repoID){
         for(let committer of topComitters){
             shortList.push(committer);
         }
-        loadChart(drawTopChart(shortList));
+        google.charts.setOnLoadCallback(drawTopChart(shortList));
     } catch(e) {
         document.getElementById("piechart").innerHTML = "The selected repo is not providing any data on top committers";
     }
 }
-function drawTopChart(shortList){
+let drawTopChart = function(shortList){
     let data = new google.visualization.DataTable();
     data.addColumn('string', 'email');
     data.addColumn('number', 'commits');

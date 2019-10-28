@@ -1,9 +1,6 @@
 const base = "http://augur.osshealth.io:5000/api/unstable";
 let groups;
 let repos;
-let shortList = new Array();
-let acceptList = new Array();
-let issueList = new Array();
 function filterRepos(keyw){
     let list = document.getElementById("repoList");
     let included = new Array();
@@ -55,8 +52,6 @@ async function getRepos(groupIndex){
     return repos;
 }
 
-/*could put shortList here instead of global. 
-call "callDrawTopChart" here instead of in "getTopCommitters"*/
 function selectRepo(){ 
     let repoIndex = document.getElementById("repoList").selectedIndex;
     let repo = repos[repoIndex];
@@ -67,43 +62,34 @@ function selectRepo(){
     getNewIssues(group.repo_group_id, repo.repo_id);
 }
 
+function loadChart(chart){
+    google.charts.load('current', {packages:['corechart']});
+    google.charts.setOnLoadCallback(chart);
+}
+
 async function getNewIssues(groupID, repoID){
     let issueURL = base + "/repo-groups/" + groupID + "/repos/" + repoID + "/issues-new?period=week";
     try{
         let newIssues = await fetchData(issueURL);
+        let issueList = new Array();
         for(let issue of newIssues){
             issue.date = issue.date.slice(0,10);
+            if (issue.issues>=100){issue.issues = 100;} //normalization
             issueList.push(issue);
         }
-        callDrawNewIssueChart();
+        loadChart(drawNewIssueChart(issueList));
     } catch(e){
         document.getElementById("colGraph").innerHTML = "The selected repo is not providing any data on new issues";
     }
 }
-
-function callDrawNewIssueChart(){
-    google.charts.load('current', {packages:['corechart']});
-    google.charts.setOnLoadCallback(drawNewIssueChart);
-}
-
-function drawNewIssueChart(){
-    var dataElements = [
-        ['date', 'issues'],
-    ];
+function drawNewIssueChart(issueList){
+    let data = new google.visualization.DataTable();
+    data.addColumn('string', 'Date');
+    data.addColumn('number', 'Issues');
     for(let item of issueList){
-        var dataItem = new Array();
-        if (item.issues>=100){item.issues = 100;}
-        dataItem.push(item.date, item.issues);
-        dataElements.push(dataItem);
+        data.addRow([item.date, item.issues]);
     }
-    var data = google.visualization.arrayToDataTable(dataElements);
-    var options = {
-        width : 600, 
-        height : 400, 
-        vAxis:{
-            ticks:[0,10,20,30,40,50,60,70,80,90,100]
-        }
-    }
+    var options = { width : 600, height : 400}
     var chart = new google.visualization.ColumnChart(document.getElementById('colGraph'));
     chart.draw(data, options);
 }
@@ -111,71 +97,49 @@ function drawNewIssueChart(){
 async function getPullAcceptance(groupID, repoID){
     let acceptUrl = base + "/repo-groups/" + groupID + "/repos/" + repoID + "/pull-request-acceptance-rate";
     try{
-        let acceptanceRate = await fetchData(acceptUrl)
+        let acceptanceRate = await fetchData(acceptUrl);
+        let acceptList = new Array();
         for(let acceptance of acceptanceRate){
             acceptance.date = acceptance.date.slice(0,10);
             acceptList.push(acceptance);
         }
-        callDrawAcceptanceChart();
+        loadChart(drawAcceptanceChart(acceptList));
     }catch(e){
         document.getElementById("pullGraph").innerHTML = "The selected repo is not providing any data on pull acceptance rate";
     }
 }
-function callDrawAcceptanceChart(){
-    google.charts.load('current', {packages:['corechart']});
-    google.charts.setOnLoadCallback(drawAcceptanceChart);
-}
-function drawAcceptanceChart(){
-    var dataElements = [
-        ['date', 'rate'],
-    ];
-    for(let item of acceptList){ //what in tarnation
-        var dataItem = new Array();
-        dataItem.push(item.date, item.rate);
-        dataElements.push(dataItem);
+function drawAcceptanceChart(acceptList){
+    let data = new google.visualization.DataTable();
+    data.addColumn('string', 'Date');
+    data.addColumn('number', 'Rate');
+    for(let item of acceptList){ 
+        data.addRow([item.date, item.rate]);
     }
-    var data = google.visualization.arrayToDataTable(dataElements);
-
     var options = {'width':600, 'height' :400};
     var chart = new google.visualization.LineChart(document.getElementById('pullGraph'));
     chart.draw(data, options);
 }
 
 async function getTopCommitters(groupID, repoID){
-    let topUrl = base + "/repo-groups/" + groupID + "/repos/" + repoID + "/top-committers?threshold=0.4";
+    let topUrl = base + "/repo-groups/" + groupID + "/repos/" + repoID + "/top-committers?threshold=0.7";
     try{
         let topComitters = await fetchData(topUrl);
+        let shortList = new Array();
         for(let committer of topComitters){
-            total += committer.commits;
+            shortList.push(committer);
         }
-        shortList.length = 0; //clear the shortList
-        for(let committer of topComitters){
-            var topComitter = {
-                email: committer.email,
-                commits: committer.commits
-            };
-            shortList.push(topComitter);
-        }
-        callDrawTopChart();
+        loadChart(drawTopChart(shortList));
     } catch(e) {
         document.getElementById("piechart").innerHTML = "The selected repo is not providing any data on top committers";
     }
 }
-function callDrawTopChart(){
-    google.charts.load('current', {packages:['corechart']});
-    google.charts.setOnLoadCallback(drawTopChart);
-}
-function drawTopChart(){
-    var dataElements = [
-        ['email', 'commits'],
-    ];
-    for(let item of shortList){ //what in tarnation
-        var dataItem = new Array();
-        dataItem.push(item.email, item.commits);
-        dataElements.push(dataItem);
+function drawTopChart(shortList){
+    let data = new google.visualization.DataTable();
+    data.addColumn('string', 'email');
+    data.addColumn('number', 'commits');
+    for(let item of shortList){
+        data.addRow([item.email, item.commits]);
     }
-    var data = google.visualization.arrayToDataTable(dataElements);
-
     var options = {'width':600, 'height' :400};
     var chart = new google.visualization.PieChart(document.getElementById('piechart'));
     chart.draw(data, options);

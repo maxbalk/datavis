@@ -1,2 +1,2 @@
 # datavis
-for SWE class
+vanilla web technology mockup for an augur frontend
